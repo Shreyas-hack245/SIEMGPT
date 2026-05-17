@@ -20,6 +20,24 @@ def generate_elasticsearch_query(user_input: str):
             }
         }
 
+    elif "vpn" in user_input:
+        return {
+            "query": {
+                "match": {
+                    "network.application": "vpn"
+                }
+            }
+        }
+
+    elif "brute force" in user_input:
+        return {
+            "query": {
+                "match": {
+                    "attack.type": "brute_force"
+                }
+            }
+        }
+
     else:
         return {
             "query": {

@@ -20,15 +20,6 @@ def generate_elasticsearch_query(user_input: str):
             }
         }
 
-    elif "vpn" in user_input:
-        return {
-            "query": {
-                "match": {
-                    "network.application": "vpn"
-                }
-            }
-        }
-
     else:
         return {
             "query": {

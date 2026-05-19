@@ -4,6 +4,8 @@ from app.context_manager import (
     save_message,
     get_conversation_history
 )
+from app.siem_connector import search_logs
+from app.response_formatter import generate_threat_report
 
 router = APIRouter()
 
@@ -19,12 +21,21 @@ def chat(query: dict):
         history
     )
 
+    logs = search_logs(
+        index_name="logs-*",
+        query=ai_generated_query
+    )
+
+    report = generate_threat_report(
+        user_message,
+        logs
+    )
+
     save_message("user", user_message)
 
-    save_message("assistant", ai_generated_query)
+    save_message("assistant", str(report))
 
     return {
-        "user_query": user_message,
         "generated_query": ai_generated_query,
-        "conversation_history": history
+        "report": report
     }

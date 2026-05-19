@@ -8,30 +8,30 @@ client = OpenAI(
     api_key=os.getenv("OPENAI_API_KEY")
 )
 
-def generate_query_with_ai(user_input):
+def generate_query_with_ai(user_input, history):
 
-    prompt = f"""
-    Convert the following cybersecurity investigation request
-    into an Elasticsearch DSL query.
+    messages = [
+        {
+            "role": "system",
+            "content": """
+            You are an AI-powered cybersecurity SIEM assistant.
+            Convert investigation requests into Elasticsearch DSL queries.
+            Maintain conversational context.
+            Return only Elasticsearch JSON query.
+            """
+        }
+    ]
 
-    User Request:
-    {user_input}
+    messages.extend(history)
 
-    Return ONLY valid JSON query.
-    """
+    messages.append({
+        "role": "user",
+        "content": user_input
+    })
 
     response = client.chat.completions.create(
         model="gpt-3.5-turbo",
-        messages=[
-            {
-                "role": "system",
-                "content": "You are a cybersecurity SIEM assistant."
-            },
-            {
-                "role": "user",
-                "content": prompt
-            }
-        ],
+        messages=messages,
         temperature=0
     )
 

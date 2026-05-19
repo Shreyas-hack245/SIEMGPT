@@ -1,12 +1,12 @@
-conversation_memory = []
+conversation_history = []
 
-def save_conversation(user_query, response):
+def save_message(role, content):
 
-    conversation_memory.append({
-        "user_query": user_query,
-        "response": response
+    conversation_history.append({
+        "role": role,
+        "content": content
     })
 
 def get_conversation_history():
 
-    return conversation_memory
+    return conversation_history

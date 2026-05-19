@@ -45,8 +45,50 @@ function App() {
         </h1>
 
         <p className="text-slate-400 mt-2">
-          Conversational SIEM Investigation Platform
+          AI-Powered Conversational SIEM Platform
         </p>
+
+      </div>
+
+      {/* Analytics Cards */}
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+
+        <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800">
+
+          <p className="text-slate-400">
+            Malware Alerts
+          </p>
+
+          <h2 className="text-4xl font-bold text-red-400 mt-2">
+            25
+          </h2>
+
+        </div>
+
+        <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800">
+
+          <p className="text-slate-400">
+            Failed Logins
+          </p>
+
+          <h2 className="text-4xl font-bold text-yellow-400 mt-2">
+            14
+          </h2>
+
+        </div>
+
+        <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800">
+
+          <p className="text-slate-400">
+            Critical Threats
+          </p>
+
+          <h2 className="text-4xl font-bold text-cyan-400 mt-2">
+            6
+          </h2>
+
+        </div>
 
       </div>
 
@@ -61,7 +103,7 @@ function App() {
         <textarea
           className="w-full p-4 rounded-xl bg-slate-800 border border-slate-700 text-white"
           rows="5"
-          placeholder="Ask SIEMGPT about malware, VPN attacks, suspicious logins..."
+          placeholder="Ask SIEMGPT about malware, suspicious logins, VPN attacks..."
           value={message}
           onChange={(e) => setMessage(e.target.value)}
         />
@@ -75,13 +117,13 @@ function App() {
 
       </div>
 
-      {/* Threat Report */}
+      {/* Results */}
 
       {response && (
 
         <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-          {/* AI Generated Query */}
+          {/* Query Panel */}
 
           <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800">
 
@@ -95,7 +137,7 @@ function App() {
 
           </div>
 
-          {/* Threat Report */}
+          {/* Report Panel */}
 
           <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800">
 
@@ -106,6 +148,7 @@ function App() {
             <div className="space-y-4">
 
               <div className="bg-slate-800 p-4 rounded-xl">
+
                 <p className="text-slate-400">
                   Report Title
                 </p>
@@ -113,9 +156,11 @@ function App() {
                 <p className="text-lg font-semibold">
                   {response.report.report_title}
                 </p>
+
               </div>
 
               <div className="bg-slate-800 p-4 rounded-xl">
+
                 <p className="text-slate-400">
                   Summary
                 </p>
@@ -123,9 +168,11 @@ function App() {
                 <p>
                   {response.report.summary}
                 </p>
+
               </div>
 
               <div className="bg-slate-800 p-4 rounded-xl">
+
                 <p className="text-slate-400">
                   Recommendation
                 </p>
@@ -133,6 +180,7 @@ function App() {
                 <p>
                   {response.report.recommendation}
                 </p>
+
               </div>
 
             </div>

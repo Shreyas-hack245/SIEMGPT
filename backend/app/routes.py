@@ -1,6 +1,5 @@
 from fastapi import APIRouter
-from app.nlp_engine import generate_elasticsearch_query
-from app.siem_connector import search_logs
+from app.openai_service import generate_query_with_ai
 
 router = APIRouter()
 
@@ -9,15 +8,9 @@ def chat(query: dict):
 
     user_message = query.get("message")
 
-    elastic_query = generate_elasticsearch_query(user_message)
-
-    logs = search_logs(
-        index_name="logs-*",
-        query=elastic_query
-    )
+    ai_generated_query = generate_query_with_ai(user_message)
 
     return {
         "user_query": user_message,
-        "generated_query": elastic_query,
-        "siem_response": logs
+        "generated_query": ai_generated_query
     }

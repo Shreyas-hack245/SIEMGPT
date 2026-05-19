@@ -4,7 +4,6 @@ from app.context_manager import (
     save_message,
     get_conversation_history
 )
-from app.siem_connector import search_logs
 from app.response_formatter import generate_threat_report
 
 router = APIRouter()
@@ -12,30 +11,42 @@ router = APIRouter()
 @router.post("/chat")
 def chat(query: dict):
 
-    user_message = query.get("message")
+    try:
 
-    history = get_conversation_history()
+        user_message = query.get("message")
 
-    ai_generated_query = generate_query_with_ai(
-        user_message,
-        history
-    )
+        history = get_conversation_history()
 
-    logs = search_logs(
-        index_name="logs-*",
-        query=ai_generated_query
-    )
+        ai_generated_query = generate_query_with_ai(
+            user_message,
+            history
+        )
 
-    report = generate_threat_report(
-        user_message,
-        logs
-    )
+        # Fake SIEM response for testing
+        fake_logs = {
+            "hits": {
+                "total": {
+                    "value": 25
+                }
+            }
+        }
 
-    save_message("user", user_message)
+        report = generate_threat_report(
+            user_message,
+            fake_logs
+        )
 
-    save_message("assistant", str(report))
+        save_message("user", user_message)
 
-    return {
-        "generated_query": ai_generated_query,
-        "report": report
-    }
+        save_message("assistant", str(report))
+
+        return {
+            "generated_query": ai_generated_query,
+            "report": report
+        }
+
+    except Exception as e:
+
+        return {
+            "error": str(e)
+        }

@@ -81,69 +81,75 @@ function App() {
 
         <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-          {/* Query Panel */}
+          {response.mode === "investigation" ? (
+            <>
+              <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800">
 
-          <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800">
+                <h2 className="text-xl font-semibold text-cyan-400 mb-4">
+                  Generated Elasticsearch Query
+                </h2>
 
-            <h2 className="text-xl font-semibold text-cyan-400 mb-4">
-              Generated Elasticsearch Query
-            </h2>
-
-            <pre className="bg-slate-800 p-4 rounded-xl overflow-auto text-sm">
-              {JSON.stringify(response.generated_query, null, 2)}
-            </pre>
-
-          </div>
-
-          {/* Report Panel */}
-
-          <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800">
-
-            <h2 className="text-xl font-semibold text-cyan-400 mb-4">
-              Threat Report
-            </h2>
-
-            <div className="space-y-4">
-
-              <div className="bg-slate-800 p-4 rounded-xl">
-
-                <p className="text-slate-400">
-                  Report Title
-                </p>
-
-                <p className="text-lg font-semibold">
-                  {response.report.report_title}
-                </p>
+                <pre className="bg-slate-800 p-4 rounded-xl overflow-auto text-sm">
+                  {JSON.stringify(response.generated_query, null, 2)}
+                </pre>
 
               </div>
 
-              <div className="bg-slate-800 p-4 rounded-xl">
+              <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800">
 
-                <p className="text-slate-400">
-                  Summary
-                </p>
+                <h2 className="text-xl font-semibold text-cyan-400 mb-4">
+                  Threat Report
+                </h2>
 
-                <p>
-                  {response.report.summary}
-                </p>
+                <div className="space-y-4">
+
+                  <div className="bg-slate-800 p-4 rounded-xl">
+
+                    <p className="text-slate-400">Report Title</p>
+                    <p className="text-lg font-semibold">
+                      {response.report.report_title}
+                    </p>
+
+                  </div>
+
+                  <div className="bg-slate-800 p-4 rounded-xl">
+
+                    <p className="text-slate-400">Summary</p>
+                    <p>{response.report.summary}</p>
+
+                  </div>
+
+                  <div className="bg-slate-800 p-4 rounded-xl">
+
+                    <p className="text-slate-400">Recommendation</p>
+                    <p>{response.report.recommendation}</p>
+
+                  </div>
+
+                  <div className="bg-slate-800 p-4 rounded-xl">
+
+                    <p className="text-slate-400">SIEM Analytics</p>
+                    <p>Total Hits: {response.analytics?.total_hits ?? 0}</p>
+
+                  </div>
+
+                </div>
 
               </div>
+            </>
+          ) : (
+            <div className="col-span-1 lg:col-span-2 bg-slate-900 p-6 rounded-2xl border border-slate-800">
 
-              <div className="bg-slate-800 p-4 rounded-xl">
+              <h2 className="text-xl font-semibold text-cyan-400 mb-4">
+                Cybersecurity Explanation
+              </h2>
 
-                <p className="text-slate-400">
-                  Recommendation
-                </p>
-
-                <p>
-                  {response.report.recommendation}
-                </p>
-
-              </div>
+              <p className="text-slate-200 whitespace-pre-line">
+                {response.explanation}
+              </p>
 
             </div>
-
-          </div>
+          )}
 
         </div>
       )}

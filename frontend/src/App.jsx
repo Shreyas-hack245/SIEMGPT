@@ -50,48 +50,6 @@ function App() {
 
       </div>
 
-      {/* Analytics Cards */}
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-
-        <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800">
-
-          <p className="text-slate-400">
-            Malware Alerts
-          </p>
-
-          <h2 className="text-4xl font-bold text-red-400 mt-2">
-            25
-          </h2>
-
-        </div>
-
-        <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800">
-
-          <p className="text-slate-400">
-            Failed Logins
-          </p>
-
-          <h2 className="text-4xl font-bold text-yellow-400 mt-2">
-            14
-          </h2>
-
-        </div>
-
-        <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800">
-
-          <p className="text-slate-400">
-            Critical Threats
-          </p>
-
-          <h2 className="text-4xl font-bold text-cyan-400 mt-2">
-            6
-          </h2>
-
-        </div>
-
-      </div>
-
       {/* Investigation Panel */}
 
       <div className="bg-slate-900 p-6 rounded-2xl shadow-xl border border-slate-800">

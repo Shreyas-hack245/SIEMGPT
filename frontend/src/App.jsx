@@ -4,6 +4,8 @@ import {
   Terminal, Shield, Search, Loader2, Database, AlertCircle, FileText, BarChart, Cpu
 } from "lucide-react";
 
+const API_URL = import.meta.env.VITE_API_URL || "/api/v1/chat";
+
 function App() {
   const [message, setMessage] = useState("");
   const [response, setResponse] = useState(null);
@@ -18,14 +20,29 @@ function App() {
       setResponse(null);
       setError(null);
 
-      const res = await axios.post("http://127.0.0.1:8000/api/v1/chat", {
+      const res = await axios.post(API_URL, {
         message: message
       });
 
       setResponse(res.data);
     } catch (err) {
       console.error(err);
-      setError("CRITICAL ERROR: Failed to establish uplink with SIEM mainframe.");
+      let errorMessage = "CRITICAL ERROR: Failed to establish uplink with SIEM mainframe.";
+
+      if (axios.isAxiosError(err)) {
+        if (err.response) {
+          const backendDetail = err.response.data?.detail || err.response.data || err.response.statusText;
+          errorMessage = `Backend error ${err.response.status}: ${backendDetail}`;
+        } else if (err.request) {
+          errorMessage = "CRITICAL ERROR: Cannot reach backend server. Start the backend and verify http://127.0.0.1:8000 is running.";
+        } else if (err.message) {
+          errorMessage = `CRITICAL ERROR: ${err.message}`;
+        }
+      } else if (err instanceof Error) {
+        errorMessage = `CRITICAL ERROR: ${err.message}`;
+      }
+
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

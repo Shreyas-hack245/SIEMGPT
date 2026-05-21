@@ -61,7 +61,7 @@ function App() {
             <div className="absolute inset-0 bg-cyan-500/10 blur-md group-hover:bg-cyan-400/20 transition-all duration-300 pointer-events-none"></div>
             <textarea
               className="w-full p-4 bg-black/80 border border-cyan-500/50 text-green-400 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition-all resize-none font-mono text-sm placeholder:text-green-900/50 relative z-10 box-shadow-neon-cyan"
-              rows="4"
+              rows={4}
               placeholder="> ENTER QUERY PARAMETERS [e.g., analyze recent failed logins from external IPs]..."
               value={message}
               onChange={(e) => setMessage(e.target.value)}

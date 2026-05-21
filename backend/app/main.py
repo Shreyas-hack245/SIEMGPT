@@ -1,9 +1,13 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+import asyncio
+
 from app.routes import router
 from app.api.auth import router as auth_router
+from app.api.alerts import router as alerts_router
+from app.api.alerts import alert_generator
 from app.db.database import Base, engine
-import app.models.user  # to register the model with Base
+import app.models.user
 
 # Create tables
 Base.metadata.create_all(bind=engine)
@@ -22,7 +26,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.on_event("startup")
+async def startup_event():
+    asyncio.create_task(alert_generator())
+
 app.include_router(auth_router, prefix="/api/auth", tags=["auth"])
+app.include_router(alerts_router, prefix="/api/alerts", tags=["alerts"])
 app.include_router(router, prefix="/api/v1")
 
 @app.get("/")

@@ -3,13 +3,12 @@ import axios from "axios";
 import { motion } from "framer-motion";
 import {
   Shield,
-  Globe,
   AlertTriangle,
   Search,
   Loader2,
   Database,
   Cpu,
-  Sparkles,
+  Terminal,
 } from "lucide-react";
 import MetricCard from "./components/dashboard/MetricCard";
 import AlertFeed from "./components/dashboard/AlertFeed";
@@ -105,213 +104,133 @@ function App() {
     : [];
 
   return (
-    if (!message.trim()) return;
-    
-    try {
-      setLoading(true);
-      setResponse(null);
-      setError(null);
+    <div className="min-h-screen bg-slate-950 text-slate-100">
+      <div className="relative overflow-hidden">
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-48 bg-[radial-gradient(circle_at_top,_rgba(14,165,233,0.18),_transparent_45%)]" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-44 bg-[radial-gradient(circle_at_bottom,_rgba(16,185,129,0.12),_transparent_45%)]" />
 
-      const res = await axios.post(API_URL, {
-        message: message
-      });
+        <div className="mx-auto max-w-[1600px] px-6 py-6 lg:px-10">
+          <header className="mb-8 rounded-[2rem] border border-cyan-500/10 bg-slate-900/80 p-6 shadow-[0_24px_80px_rgba(15,23,42,0.55)] backdrop-blur-xl lg:flex lg:items-center lg:justify-between lg:gap-8">
+            <div className="space-y-4">
+              <div className="inline-flex items-center gap-3 rounded-full bg-cyan-500/10 px-4 py-2 text-xs uppercase tracking-[0.35em] text-cyan-200 shadow-inner shadow-cyan-500/10">
+                <Shield className="h-4 w-4 text-cyan-300" />
+                Enterprise SOC Live
+              </div>
+              <div>
+                <h1 className="text-3xl font-semibold tracking-tight text-white md:text-4xl">SIEMGPT Enterprise SOC Dashboard</h1>
+                <p className="mt-3 max-w-2xl text-slate-400">Real-time threat analytics, live alert streaming, MITRE ATT&CK correlation, and investigation workflows designed for modern security operations.</p>
+              </div>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="rounded-3xl border border-cyan-500/15 bg-slate-950/80 px-5 py-4 text-center shadow-[0_0_30px_rgba(6,182,212,0.12)]">
+                <p className="text-xs uppercase tracking-[0.35em] text-cyan-300/70">Threat Score</p>
+                <p className="mt-3 text-3xl font-semibold text-white">72</p>
+              </div>
+              <div className="rounded-3xl border border-cyan-500/15 bg-slate-950/80 px-5 py-4 text-center shadow-[0_0_30px_rgba(16,185,129,0.12)]">
+                <p className="text-xs uppercase tracking-[0.35em] text-cyan-300/70">MITRE Coverage</p>
+                <p className="mt-3 text-3xl font-semibold text-white">93%</p>
+              </div>
+              <div className="rounded-3xl border border-cyan-500/15 bg-slate-950/80 px-5 py-4 text-center shadow-[0_0_30px_rgba(59,130,246,0.12)]">
+                <p className="text-xs uppercase tracking-[0.35em] text-cyan-300/70">Live Alerts</p>
+                <p className="mt-3 text-3xl font-semibold text-white">{alertsData.length}</p>
+              </div>
+            </div>
+          </header>
 
-      setResponse(res.data);
-    } catch (err) {
-      console.error(err);
-      let errorMessage = "CRITICAL ERROR: Failed to establish uplink with SIEM mainframe.";
+          <div className="grid gap-6 xl:grid-cols-[minmax(320px,340px)_1fr]">
+            <HistorySidebar history={historyData.length ? historyData : []} />
 
-      if (axios.isAxiosError(err)) {
-        if (err.response) {
-          const backendDetail = err.response.data?.detail || err.response.data || err.response.statusText;
-          errorMessage = `Backend error ${err.response.status}: ${backendDetail}`;
-        } else if (err.request) {
-          errorMessage = "CRITICAL ERROR: Cannot reach backend server. Start the backend and verify http://127.0.0.1:8000 is running.";
-        } else if (err.message) {
-          errorMessage = `CRITICAL ERROR: ${err.message}`;
-        }
-      } else if (err instanceof Error) {
-        errorMessage = `CRITICAL ERROR: ${err.message}`;
-      }
+            <main className="space-y-6">
+              <section className="grid gap-6 xl:grid-cols-2">
+                {panels.map((panel) => (
+                  <MetricCard key={panel.title} {...panel} />
+                ))}
+              </section>
 
-      setError(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  };
+              <section className="grid gap-6 xl:grid-cols-[1.5fr_1fr]">
+                <AttackTimeline data={summary?.timeline || []} />
+                <AlertFeed alerts={alertsData} />
+              </section>
 
-  return (
-    <div className="min-h-screen bg-transparent text-cyan-400 font-mono relative z-10 flex flex-col">
-      {/* Header */}
-      <header className="border-b border-cyan-500/30 bg-black/80 px-6 py-4 flex justify-between items-center backdrop-blur-sm box-shadow-neon-cyan">
-        <div className="flex items-center gap-3">
-          <Shield className="w-8 h-8 text-cyan-400 animate-pulse" />
-          <h1 className="text-2xl font-bold text-cyan-400 tracking-widest text-shadow-neon-cyan uppercase">
-            SIEM-GPT // NEURAL_LINK
-          </h1>
-        </div>
-        <div className="flex items-center gap-2 px-4 py-1.5 bg-black/60 cyber-border">
-          <div className="w-2.5 h-2.5 rounded-none bg-green-500 animate-ping"></div>
-          <span className="text-xs font-bold text-green-400 uppercase tracking-widest text-shadow-neon-green">Sys_Online</span>
-        </div>
-      </header>
+              <section className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+                <ThreatMap />
+                <div className="space-y-6">
+                  <InvestigationConsole
+                    query={query}
+                    setQuery={setQuery}
+                    onSubmit={handleSubmit}
+                    loading={consoleLoading}
+                    history={historyData}
+                  />
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    {summary?.threat_intel?.map((intel, index) => (
+                      <ThreatIntelCard key={index} {...intel} />
+                    ))}
+                  </div>
+                </div>
+              </section>
 
-      <main className="flex-grow max-w-7xl mx-auto p-6 mt-4 w-full">
-        {/* Input Section */}
-        <section className="bg-black/60 cyber-border p-6 mb-8 backdrop-blur-md box-shadow-neon-cyan">
-          <div className="flex items-center gap-3 mb-6">
-            <Terminal className="w-6 h-6 text-cyan-400" />
-            <h2 className="text-sm font-bold text-cyan-300 uppercase tracking-widest border-b border-cyan-500/30 pb-1 flex-grow">
-              Threat_Query_Interface
-            </h2>
-          </div>
-          
-          <div className="relative group">
-            <div className="absolute inset-0 bg-cyan-500/10 blur-md group-hover:bg-cyan-400/20 transition-all duration-300 pointer-events-none"></div>
-            <textarea
-              className="w-full p-4 bg-black/80 border border-cyan-500/50 text-green-400 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition-all resize-none font-mono text-sm placeholder:text-green-900/50 relative z-10 box-shadow-neon-cyan"
-              rows={4}
-              placeholder="> ENTER QUERY PARAMETERS [e.g., analyze recent failed logins from external IPs]..."
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  sendMessage();
-                }
-              }}
-            />
-          </div>
-
-          <div className="mt-6 flex justify-between items-center">
-            <p className="text-xs text-cyan-600/70 uppercase tracking-wider flex items-center gap-2">
-              <Cpu className="w-4 h-4" />
-              [ENTER] = Execute | [SHIFT+ENTER] = New Line
-            </p>
-            <button
-              onClick={sendMessage}
-              disabled={loading || !message.trim()}
-              className={`flex items-center gap-2 px-8 py-3 font-bold uppercase tracking-widest transition-all duration-300 cyber-border ${
-                loading || !message.trim()
-                  ? "bg-black/50 text-cyan-800 border-cyan-900/30 cursor-not-allowed"
-                  : "bg-cyan-950/40 hover:bg-cyan-900/60 text-cyan-300 hover:text-cyan-100 box-shadow-neon-cyan hover:shadow-[0_0_20px_#0ff]"
-              }`}
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin text-cyan-400" />
-                  Processing...
-                </>
-              ) : (
-                <>
-                  <Search className="w-5 h-5" />
-                  Init_Sequence
-                </>
+              {consoleResponse && (
+                <motion.section
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="rounded-[2rem] border border-cyan-500/15 bg-slate-900/90 p-6 shadow-[0_0_40px_rgba(15,23,42,0.45)]"
+                >
+                  <div className="mb-5 flex items-center gap-3">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-cyan-500/15 text-cyan-300">
+                      <Database className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.35em] text-cyan-300/80">Investigation Output</p>
+                      <h2 className="text-lg font-semibold text-white">Current Analysis</h2>
+                    </div>
+                  </div>
+                  <div className="grid gap-5 lg:grid-cols-2">
+                    <div className="rounded-3xl border border-cyan-500/15 bg-black/70 p-5">
+                      <p className="text-sm uppercase tracking-[0.3em] text-cyan-300/80">Summary</p>
+                      <p className="mt-3 whitespace-pre-line text-slate-300">{consoleResponse.explanation || consoleResponse.report?.summary}</p>
+                    </div>
+                    <div className="rounded-3xl border border-cyan-500/15 bg-black/70 p-5">
+                      <p className="text-sm uppercase tracking-[0.3em] text-cyan-300/80">Threat Detection</p>
+                      <p className="mt-3 text-slate-300">{consoleResponse.report?.report_title || "Investigation completed."}</p>
+                    </div>
+                  </div>
+                </motion.section>
               )}
-            </button>
+            </main>
           </div>
-        </section>
+        </div>
+      </div>
 
-        {/* Error State */}
-        {error && (
-          <div className="bg-red-950/40 border border-red-500 rounded-none p-4 flex items-center gap-4 text-red-400 mb-8 box-shadow-neon-red animate-pulse">
-            <AlertCircle className="w-6 h-6 text-red-500" />
-            <p className="text-sm font-bold uppercase tracking-wider text-shadow-neon-red">{error}</p>
+      {notifications.length > 0 && (
+        <div className="fixed bottom-6 right-6 z-50 w-[320px] space-y-3">
+          {notifications.map((note, index) => (
+            <motion.div
+              key={`${note.source_ip}-${index}`}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="rounded-3xl border border-cyan-500/20 bg-slate-950/95 p-4 shadow-[0_0_40px_rgba(15,23,42,0.45)]"
+            >
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-semibold text-white">{note.title}</p>
+                  <p className="mt-1 text-xs text-slate-400">{note.source_ip} • {note.severity}</p>
+                </div>
+                <span className="inline-flex h-8 items-center rounded-full bg-cyan-500/10 px-3 text-xs uppercase tracking-[0.3em] text-cyan-200">Live</span>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      )}
+
+      {error && (
+        <div className="fixed bottom-6 left-6 z-50 rounded-3xl border border-red-500/30 bg-red-950/95 p-4 text-red-200 shadow-[0_0_40px_rgba(239,68,68,0.25)]">
+          <div className="flex items-center gap-3">
+            <AlertTriangle className="h-5 w-5 text-red-400" />
+            <p className="text-sm">{error}</p>
           </div>
-        )}
-
-        {/* Results Section */}
-        {response && (
-          <section className="space-y-8 transition-all duration-500 ease-in-out opacity-100 translate-y-0">
-            
-            {/* Assistant / Educational Mode */}
-            {response.mode === "assistant" && (
-              <div className="bg-black/60 cyber-border overflow-hidden backdrop-blur-md box-shadow-neon-cyan">
-                <div className="bg-cyan-950/40 border-b border-cyan-500/50 px-6 py-4 flex items-center gap-3">
-                  <FileText className="w-5 h-5 text-cyan-400" />
-                  <h3 className="text-sm font-bold text-cyan-300 uppercase tracking-widest text-shadow-neon-cyan">Neural_Analysis</h3>
-                </div>
-                <div className="p-6 bg-black/80 relative">
-                  <div className="absolute top-0 left-0 w-1 h-full bg-cyan-500/30"></div>
-                  <p className="text-green-400 leading-relaxed whitespace-pre-line text-sm pl-4 font-mono">
-                    <span className="text-cyan-500 mr-2">{">"}</span>
-                    {response.explanation}
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {/* Investigation Mode */}
-            {response.mode === "investigation" && (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                
-                {/* ElasticSearch Query */}
-                <div className="bg-black/60 cyber-border overflow-hidden flex flex-col backdrop-blur-md box-shadow-neon-cyan">
-                  <div className="bg-cyan-950/40 border-b border-cyan-500/50 px-5 py-4 flex justify-between items-center">
-                    <div className="flex items-center gap-3">
-                      <Database className="w-5 h-5 text-cyan-400" />
-                      <h3 className="text-sm font-bold text-cyan-300 uppercase tracking-widest text-shadow-neon-cyan">Query_Payload</h3>
-                    </div>
-                    <span className="text-xs font-bold text-green-400 bg-black/80 px-3 py-1 border border-green-500/30 uppercase tracking-wider">JSON_Blob</span>
-                  </div>
-                  <div className="p-5 bg-black/80 flex-grow relative">
-                     <div className="absolute top-0 right-0 w-full h-1 bg-cyan-500/20"></div>
-                    <pre className="text-xs font-mono text-cyan-200 overflow-auto h-full max-h-[400px] p-4 bg-black/50 border border-cyan-900/50 scrollbar-thin scrollbar-thumb-cyan-500 scrollbar-track-black">
-                      <code>{JSON.stringify(response.generated_query, null, 2)}</code>
-                    </pre>
-                  </div>
-                </div>
-
-                {/* Threat Report Details */}
-                <div className="bg-black/60 cyber-border overflow-hidden backdrop-blur-md box-shadow-neon-cyan flex flex-col">
-                  <div className="bg-cyan-950/40 border-b border-cyan-500/50 px-5 py-4 flex justify-between items-center">
-                    <div className="flex items-center gap-3">
-                      <BarChart className="w-5 h-5 text-cyan-400" />
-                      <h3 className="text-sm font-bold text-cyan-300 uppercase tracking-widest text-shadow-neon-cyan">Tactical_Report</h3>
-                    </div>
-                  </div>
-                  
-                  <div className="p-6 space-y-6 flex-grow bg-black/80">
-                    <div className="relative pl-4 border-l-2 border-cyan-500/50">
-                      <h4 className="text-xs font-bold text-cyan-600 uppercase tracking-widest mb-2">Operation_Title</h4>
-                      <p className="text-sm font-bold text-cyan-200">
-                        {response.report?.report_title || "Unknown_Operation"}
-                      </p>
-                    </div>
-
-                    <div className="relative pl-4 border-l-2 border-green-500/50">
-                      <h4 className="text-xs font-bold text-green-600 uppercase tracking-widest mb-2">Exec_Summary</h4>
-                      <p className="text-sm text-green-400 leading-relaxed bg-black/60 p-4 border border-green-900/40">
-                        {response.report?.summary || "No data extracted."}
-                      </p>
-                    </div>
-
-                    <div className="relative pl-4 border-l-2 border-red-500/50">
-                      <h4 className="text-xs font-bold text-red-600 uppercase tracking-widest mb-2">Countermeasures</h4>
-                      <p className="text-sm text-red-400 leading-relaxed bg-black/60 p-4 border border-red-900/40">
-                        {response.report?.recommendation || "No immediate actions suggested."}
-                      </p>
-                    </div>
-
-                    <div className="flex items-center justify-between border-t border-cyan-500/30 pt-6 mt-auto">
-                      <span className="text-xs font-bold text-cyan-500 uppercase tracking-widest">Total_Anomalies</span>
-                      <span className="text-sm font-bold bg-cyan-950 text-cyan-300 px-4 py-1.5 border border-cyan-500/50 shadow-[0_0_10px_rgba(0,255,255,0.2)]">
-                        {response.analytics?.total_hits ?? 0}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-              </div>
-            )}
-          </section>
-        )}
-      </main>
-      
-      {/* Footer deco */}
-      <footer className="border-t border-cyan-900/50 p-4 text-center">
-        <p className="text-[10px] text-cyan-800 uppercase tracking-[0.3em]">SECURE_CONNECTION // {new Date().getFullYear()} // SIEM_GPT_V1.0</p>
-      </footer>
+        </div>
+      )}
     </div>
   );
 }

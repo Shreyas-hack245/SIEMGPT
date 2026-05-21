@@ -25,15 +25,86 @@ const WEBSOCKET_URL = `ws://${window.location.hostname}:8000/api/alerts/live`;
 
 function App() {
   const [summary, setSummary] = useState(null);
-  const [alerts, setAlerts] = useState([]);
-  const [history, setHistory] = useState([]);
+  const [alertsData, setAlertsData] = useState([]);
+  const [historyData, setHistoryData] = useState([]);
   const [query, setQuery] = useState("");
   const [consoleLoading, setConsoleLoading] = useState(false);
   const [consoleResponse, setConsoleResponse] = useState(null);
   const [error, setError] = useState(null);
   const [notifications, setNotifications] = useState([]);
 
-  const sendMessage = async () => {
+  useEffect(() => {
+    loadDashboard();
+    startLiveAlerts();
+  }, []);
+
+  const loadDashboard = async () => {
+    try {
+      const [summaryResult, alertResult, historyResult] = await Promise.all([
+        fetchDashboardSummary(),
+        fetchRecentAlerts(),
+        fetchInvestigationHistory(),
+      ]);
+      setSummary(summaryResult);
+      setAlertsData(alertResult);
+      setHistoryData(historyResult);
+    } catch (fetchError) {
+      console.error(fetchError);
+      setError("Unable to load the enterprise SOC dashboard. Verify backend connectivity.");
+    }
+  };
+
+  const startLiveAlerts = () => {
+    try {
+      const socket = new WebSocket(WEBSOCKET_URL);
+      socket.addEventListener("message", (event) => {
+        const liveAlert = JSON.parse(event.data);
+        setAlertsData((current) => [liveAlert, ...current].slice(0, 12));
+        setNotifications((current) => [liveAlert, ...current].slice(0, 3));
+      });
+    } catch (wsError) {
+      console.warn("Live alert stream is unavailable", wsError);
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!query.trim()) return;
+    setConsoleLoading(true);
+    setError(null);
+
+    try {
+      const response = await axios.post(CHAT_URL, { message: query });
+      setConsoleResponse(response.data);
+      setHistoryData((current) => [
+        {
+          id: Date.now(),
+          query,
+          result_summary: response.data.report?.summary || response.data.explanation || "No summary available.",
+          severity: response.data.report?.severity || "Medium",
+          technique: response.data.report?.report_title || "Investigation",
+          created_at: new Date().toISOString(),
+        },
+        ...current,
+      ].slice(0, 10));
+      setQuery("");
+    } catch (submitError) {
+      console.error(submitError);
+      setError("Threat investigation failed. Confirm the backend is running and accessible.");
+    } finally {
+      setConsoleLoading(false);
+    }
+  };
+
+  const panels = summary
+    ? [
+        { title: "Total Alerts", value: summary.total_alerts, detail: "Active incidents in the SOC queue.", badge: "Critical", intensity: 78 },
+        { title: "Open Investigations", value: summary.open_investigations, detail: "Ongoing hunt and remediation tasks.", badge: "High", intensity: 64 },
+        { title: "Analyst Confidence", value: `${summary.analyst_confidence}%`, detail: "Confidence in detection and recommendations.", badge: "Medium", intensity: summary.analyst_confidence },
+        { title: "Severity Coverage", value: summary.severity_distribution.reduce((acc, item) => acc + item.count, 0), detail: "Threat classes mapped to MITRE ATT&CK.", badge: "Low", intensity: 52 },
+      ]
+    : [];
+
+  return (
     if (!message.trim()) return;
     
     try {

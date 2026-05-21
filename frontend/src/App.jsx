@@ -1,16 +1,37 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
-import { 
-  Terminal, Shield, Search, Loader2, Database, AlertCircle, FileText, BarChart, Cpu
+import { motion } from "framer-motion";
+import {
+  Shield,
+  Globe,
+  AlertTriangle,
+  Search,
+  Loader2,
+  Database,
+  Cpu,
+  Sparkles,
 } from "lucide-react";
+import MetricCard from "./components/dashboard/MetricCard";
+import AlertFeed from "./components/dashboard/AlertFeed";
+import InvestigationConsole from "./components/dashboard/InvestigationConsole";
+import AttackTimeline from "./components/dashboard/AttackTimeline";
+import ThreatMap from "./components/dashboard/ThreatMap";
+import ThreatIntelCard from "./components/dashboard/ThreatIntelCard";
+import HistorySidebar from "./components/dashboard/HistorySidebar";
+import { fetchDashboardSummary, fetchRecentAlerts, fetchInvestigationHistory } from "./lib/api";
 
-const API_URL = import.meta.env.VITE_API_URL || "/api/v1/chat";
+const CHAT_URL = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/chat` : "/api/v1/chat";
+const WEBSOCKET_URL = `ws://${window.location.hostname}:8000/api/alerts/live`;
 
 function App() {
-  const [message, setMessage] = useState("");
-  const [response, setResponse] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [summary, setSummary] = useState(null);
+  const [alerts, setAlerts] = useState([]);
+  const [history, setHistory] = useState([]);
+  const [query, setQuery] = useState("");
+  const [consoleLoading, setConsoleLoading] = useState(false);
+  const [consoleResponse, setConsoleResponse] = useState(null);
   const [error, setError] = useState(null);
+  const [notifications, setNotifications] = useState([]);
 
   const sendMessage = async () => {
     if (!message.trim()) return;

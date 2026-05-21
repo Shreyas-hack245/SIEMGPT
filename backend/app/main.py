@@ -6,8 +6,11 @@ from app.routes import router
 from app.api.auth import router as auth_router
 from app.api.alerts import router as alerts_router
 from app.api.alerts import alert_generator
+from app.api.dashboard import router as dashboard_router
 from app.db.database import Base, engine
 import app.models.user
+import app.models.alert
+import app.models.investigation
 
 # Create tables
 Base.metadata.create_all(bind=engine)
@@ -32,6 +35,7 @@ async def startup_event():
 
 app.include_router(auth_router, prefix="/api/auth", tags=["auth"])
 app.include_router(alerts_router, prefix="/api/alerts", tags=["alerts"])
+app.include_router(dashboard_router, prefix="/api/v1/dashboard", tags=["dashboard"])
 app.include_router(router, prefix="/api/v1")
 
 @app.get("/")

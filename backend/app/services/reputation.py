@@ -1,30 +1,66 @@
 import requests
+from typing import Any, Dict
 
-class ReputationService:
-    def __init__(self, api_key: str = None):
-        # E.g., VirusTotal API key or AbuseIPDB key
-        self.api_key = api_key or "DEMO_KEY"
+from app.core.config import settings
 
-    def lookup_ip(self, ip_address: str) -> dict:
-        """
-        Simulate a lookup to a threat intelligence service.
-        In a real scenario, this would use self.api_key to query VirusTotal/AbuseIPDB.
-        """
-        # Mock logic
-        malicious_ips = ["203.0.113.5", "10.0.0.5", "192.168.1.100"]
-        if ip_address in malicious_ips:
-            return {
-                "ip": ip_address,
-                "reputation": "malicious",
-                "confidence_score": 85,
-                "threat_type": "botnet"
-            }
-        
-        return {
-            "ip": ip_address,
-            "reputation": "safe",
-            "confidence_score": 99,
-            "threat_type": "none"
+ABUSEIPDB_BASE = "https://api.abuseipdb.com/api/v2/check"
+VIRUSTOTAL_BASE = "https://www.virustotal.com/api/v3/ip_addresses"
+
+
+def check_ip_reputation(ip_address: str) -> Dict[str, Any]:
+    reputation = {
+        "ip": ip_address,
+        "risk_score": 40,
+        "source": "mock",
+        "confidence": "Medium",
+        "summary": "No threat intelligence API keys configured. Showing sample enrichment.",
+        "abuse_categories": ["ssh", "botnet"],
+    }
+
+    if settings.ABUSEIPDB_API_KEY:
+        headers = {
+            "Key": settings.ABUSEIPDB_API_KEY,
+            "Accept": "application/json",
         }
+        try:
+            response = requests.get(
+                ABUSEIPDB_BASE,
+                headers=headers,
+                params={"ipAddress": ip_address, "maxAgeInDays": 90},
+                timeout=8,
+            )
+            if response.ok:
+                payload = response.json().get("data", {})
+                reputation.update({
+                    "risk_score": payload.get("abuseConfidenceScore", reputation["risk_score"]),
+                    "source": "AbuseIPDB",
+                    "confidence": "High",
+                    "summary": payload.get("abuseConfidenceScore", 0) > 20
+                    and "AbuseIPDB reports recent suspicious activity."
+                    or reputation["summary"],
+                    "abuse_categories": [payload.get("usageType", "unknown")],
+                })
+        except Exception:
+            pass
 
-reputation_service = ReputationService()
+    if settings.VIRUSTOTAL_API_KEY:
+        headers = {"x-apikey": settings.VIRUSTOTAL_API_KEY}
+        try:
+            response = requests.get(
+                f"{VIRUSTOTAL_BASE}/{ip_address}", headers=headers, timeout=8
+            )
+            if response.ok:
+                vt_data = response.json().get("data", {}).get("attributes", {})
+                reputation.update({
+                    "risk_score": vt_data.get("reputation", reputation["risk_score"]),
+                    "source": "VirusTotal",
+                    "confidence": "High",
+                    "summary": vt_data.get("last_analysis_stats", {}).get("malicious", 0) > 0
+                    and "VirusTotal detection indicates a suspicious IP."
+                    or reputation["summary"],
+                    "abuse_categories": vt_data.get("tags", []),
+                })
+        except Exception:
+            pass
+
+    return reputation

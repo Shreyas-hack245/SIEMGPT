@@ -81,7 +81,7 @@ def _build_summary(alerts: List[Alert]) -> DashboardSummary:
 
 @router.get("/summary", response_model=DashboardSummary, tags=["dashboard"])
 def get_dashboard_summary(
-    db: Session = Depends(get_db), current_user=Depends(get_current_user)
+    db: Session = Depends(get_db)
 ):
     alerts = db.query(Alert).order_by(Alert.created_at.desc()).limit(50).all()
     if not alerts:
@@ -117,13 +117,13 @@ def get_ip_reputation(ip: str, current_user=Depends(get_current_user)):
 
 
 @router.get("/timeline", tags=["dashboard"])
-def get_attack_timeline(current_user=Depends(get_current_user)):
+def get_attack_timeline():
     return build_attack_timeline()
 
 
 @router.get("/history", response_model=List[InvestigationHistoryItem], tags=["dashboard"])
 def get_investigation_history(
-    db: Session = Depends(get_db), current_user=Depends(get_current_user)
+    db: Session = Depends(get_db)
 ):
     history = (
         db.query(InvestigationHistory)

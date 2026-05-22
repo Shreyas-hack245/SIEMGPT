@@ -44,20 +44,5 @@ def search_logs(index_name, query):
         return response
     except ConnectionError as e:
         return fallback_siem_data(str(e))
-                "total": {"value": 24, "relation": "eq"},
-                "hits": [
-                    {
-                        "_source": {
-                            "@timestamp": "2026-05-21T08:00:00Z",
-                            "event": {"action": "failed_login", "category": "authentication"},
-                            "source": {"ip": "203.0.113.5"},
-                            "user": {"name": "admin"}
-                        }
-                    }
-                ]
-            }
-        }
     except Exception as e:
-        return {
-            "error": str(e)
-        }
+        return fallback_siem_data(str(e))

@@ -44,6 +44,19 @@ def generate_threat_report(query, siem_data):
 
 
 def build_siem_analytics(siem_data):
+    if siem_data.get("fallback"):
+        total_hits = 0
+        try:
+            total_hits = siem_data["hits"]["total"]["value"]
+        except Exception:
+            total_hits = 0
+
+        return {
+            "status": "demo",
+            "total_hits": total_hits,
+            "error": siem_data.get("error")
+        }
+
     if "error" in siem_data:
         return {
             "status": "error",

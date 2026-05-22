@@ -26,7 +26,7 @@ export default function InvestigationConsole({ query, setQuery, onSubmit, onInpu
           onKeyDown={onInputKeyDown}
           rows={4}
           className="w-full resize-none bg-transparent text-sm text-slate-100 outline-none placeholder:text-slate-500"
-          placeholder="Enter threat investigation query..."
+          placeholder="e.g. Investigate failed logins from the last 24 hours"
         />
       </div>
 
@@ -41,6 +41,7 @@ export default function InvestigationConsole({ query, setQuery, onSubmit, onInpu
         </button>
         <span className="text-xs uppercase tracking-[0.3em] text-slate-500">Enter to submit, Shift+Enter for newline</span>
       </div>
+      <p className="mt-3 text-xs text-slate-500">Example: "Investigate failed login attempts from the last 24 hours."</p>
 
       <div className="mt-6 flex flex-col gap-3">
         {history.slice(0, 4).map((item) => (

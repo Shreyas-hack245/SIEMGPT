@@ -4,10 +4,7 @@ import { motion } from "framer-motion";
 import {
   Shield,
   AlertTriangle,
-  Search,
-  Loader2,
   Database,
-  Cpu,
   Terminal,
 } from "lucide-react";
 import MetricCard from "./components/dashboard/MetricCard";

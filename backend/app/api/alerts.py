@@ -45,7 +45,7 @@ async def websocket_endpoint(websocket: WebSocket):
 
 @router.get("/recent", tags=["alerts"])
 def get_recent_alerts(
-    db: Session = Depends(get_db), current_user=Depends(get_current_user)
+    db: Session = Depends(get_db)
 ):
     alerts = db.query(Alert).order_by(Alert.created_at.desc()).limit(12).all()
     return [

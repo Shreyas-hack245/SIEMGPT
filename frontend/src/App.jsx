@@ -171,7 +171,7 @@ function App() {
               </section>
 
               <section className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-                <ThreatMap />
+                <ThreatMap topSources={summary?.top_sources || []} techniqueBreakdown={summary?.technique_breakdown || []} />
                 <div className="space-y-6">
                   <InvestigationConsole
                     query={query}

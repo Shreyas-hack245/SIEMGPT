@@ -1,6 +1,17 @@
 import { motion } from "framer-motion";
 
-export default function ThreatMap() {
+const regionForIp = (ip) => {
+  if (ip.startsWith("10.") || ip.startsWith("192.168.") || ip.startsWith("172.")) return "Private Network";
+  if (ip.startsWith("203.")) return "APAC";
+  if (ip.startsWith("198.") || ip.startsWith("20.") || ip.startsWith("23.")) return "North America";
+  if (ip.startsWith("51.") || ip.startsWith("195.") || ip.startsWith("185.")) return "EMEA";
+  return "Global"
+};
+
+export default function ThreatMap({ topSources = [], techniqueBreakdown = [] }) {
+  const topSourceList = topSources.slice(0, 4);
+  const hasSources = topSourceList.length > 0;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -27,6 +38,46 @@ export default function ThreatMap() {
             NA
           </div>
         </div>
+      </div>
+      <div className="mt-5 space-y-3">
+        <div className="rounded-3xl border border-cyan-500/10 bg-black/60 p-4">
+          <p className="text-xs uppercase tracking-[0.35em] text-cyan-300/80">Top attack sources</p>
+          {hasSources ? (
+            <div className="mt-3 space-y-3">
+              {topSourceList.map((source) => (
+                <div key={source.source_ip} className="rounded-3xl bg-slate-950/80 p-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="font-semibold text-white">{source.source_ip}</p>
+                      <p className="text-xs text-slate-500">{regionForIp(source.source_ip)} • {source.last_seen}</p>
+                    </div>
+                    <span className="rounded-full bg-cyan-500/10 px-3 py-1 text-[11px] uppercase tracking-[0.3em] text-cyan-200">{source.count} alerts</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="mt-3 text-sm text-slate-400">No live source data available yet.</p>
+          )}
+        </div>
+        {techniqueBreakdown.length > 0 && (
+          <div className="rounded-3xl border border-cyan-500/10 bg-black/60 p-4">
+            <p className="text-xs uppercase tracking-[0.35em] text-cyan-300/80">Top techniques</p>
+            <div className="mt-3 grid gap-3">
+              {techniqueBreakdown.slice(0, 3).map((technique) => (
+                <div key={technique.technique} className="rounded-3xl bg-slate-950/80 p-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="font-semibold text-white">{technique.technique}</p>
+                      <p className="text-xs text-slate-500">{technique.mitre_id || "MITRE"}</p>
+                    </div>
+                    <span className="text-xs uppercase tracking-[0.3em] text-slate-400">{technique.count} events</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </motion.div>
   );

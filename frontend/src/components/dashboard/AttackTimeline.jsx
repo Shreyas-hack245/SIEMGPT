@@ -8,12 +8,31 @@ const severityMap = {
   Low: 1,
 };
 
+const CustomTooltip = ({ active, payload }) => {
+  if (!active || !payload?.length) return null;
+  const event = payload[0].payload;
+
+  return (
+    <div className="rounded-3xl border border-cyan-500/30 bg-slate-900/95 p-3 text-sm text-slate-100 shadow-lg shadow-cyan-500/10">
+      <p className="font-semibold text-white">{event.stage}</p>
+      <p className="mt-1 text-xs uppercase tracking-[0.3em] text-cyan-300">{event.technique_id}</p>
+      <p className="mt-2 leading-relaxed text-slate-300">{event.description}</p>
+      <p className="mt-3 text-xs text-slate-500">Severity: {event.severity}</p>
+    </div>
+  );
+};
+
 export default function AttackTimeline({ data }) {
   const chartData = data.map((item) => ({
     label: item.timestamp.split("T")[1].slice(0, 5),
     intensity: severityMap[item.severity] || 1,
     stage: item.stage,
+    description: item.description,
+    technique_id: item.technique_id,
+    severity: item.severity,
   }));
+
+  const recentStages = data.slice(-3).reverse();
 
   return (
     <motion.div
@@ -40,10 +59,25 @@ export default function AttackTimeline({ data }) {
             <CartesianGrid strokeDasharray="3 3" stroke="#0f172a" />
             <XAxis dataKey="label" tick={{ fill: "#94a3b8" }} axisLine={false} tickLine={false} />
             <YAxis tick={{ fill: "#94a3b8" }} axisLine={false} tickLine={false} />
-            <Tooltip contentStyle={{ background: "#020617", border: "1px solid rgba(56, 189, 248, 0.25)", color: "#fff" }} />
+            <Tooltip content={<CustomTooltip />} />
             <Area type="monotone" dataKey="intensity" stroke="#22c55e" strokeWidth={3} fill="url(#timelineGradient)" />
           </AreaChart>
         </ResponsiveContainer>
+      </div>
+
+      <div className="mt-6 grid gap-3">
+        {recentStages.map((event) => (
+          <div key={event.timestamp} className="rounded-3xl border border-cyan-500/10 bg-black/60 p-4">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="font-semibold text-white">{event.stage}</p>
+                <p className="text-xs uppercase tracking-[0.3em] text-cyan-300">{event.technique_id}</p>
+              </div>
+              <span className="rounded-full bg-slate-800/80 px-3 py-1 text-[11px] uppercase tracking-[0.3em] text-slate-300">{event.severity}</span>
+            </div>
+            <p className="mt-3 text-sm leading-relaxed text-slate-300">{event.description}</p>
+          </div>
+        ))}
       </div>
     </motion.div>
   );

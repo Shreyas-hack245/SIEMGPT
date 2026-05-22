@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { Terminal, ChevronRight } from "lucide-react";
 
-export default function InvestigationConsole({ query, setQuery, onSubmit, loading, history }) {
+export default function InvestigationConsole({ query, setQuery, onSubmit, onInputKeyDown, loading, history }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -23,6 +23,7 @@ export default function InvestigationConsole({ query, setQuery, onSubmit, loadin
         <textarea
           value={query}
           onChange={(event) => setQuery(event.target.value)}
+          onKeyDown={onInputKeyDown}
           rows={4}
           className="w-full resize-none bg-transparent text-sm text-slate-100 outline-none placeholder:text-slate-500"
           placeholder="Enter threat investigation query..."
@@ -38,7 +39,7 @@ export default function InvestigationConsole({ query, setQuery, onSubmit, loadin
           {loading ? "Executing..." : "Run Query"}
           <ChevronRight className="h-4 w-4" />
         </button>
-        <span className="text-xs uppercase tracking-[0.3em] text-slate-500">Shift+Enter for new line</span>
+        <span className="text-xs uppercase tracking-[0.3em] text-slate-500">Enter to submit, Shift+Enter for newline</span>
       </div>
 
       <div className="mt-6 flex flex-col gap-3">

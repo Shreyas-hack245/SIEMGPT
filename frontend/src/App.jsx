@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { motion } from "framer-motion";
 import {
@@ -19,8 +19,9 @@ import ThreatIntelCard from "./components/dashboard/ThreatIntelCard";
 import HistorySidebar from "./components/dashboard/HistorySidebar";
 import { fetchDashboardSummary, fetchRecentAlerts, fetchInvestigationHistory } from "./lib/api";
 
-const CHAT_URL = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/chat` : "/api/v1/chat";
-const WEBSOCKET_URL = `ws://${window.location.hostname}:8000/api/alerts/live`;
+const API_BASE = import.meta.env.VITE_API_URL || "/api/v1";
+const CHAT_URL = `${API_BASE.replace(/\/$/, "")}/chat`;
+const WEBSOCKET_URL = import.meta.env.VITE_WS_URL || `${window.location.protocol === "https:" ? "wss:" : "ws:"}//${window.location.host}/api/alerts/live`;
 
 function App() {
   const [summary, setSummary] = useState(null);
@@ -32,9 +33,16 @@ function App() {
   const [error, setError] = useState(null);
   const [notifications, setNotifications] = useState([]);
 
+  const socketRef = useRef(null);
+
   useEffect(() => {
     loadDashboard();
-    startLiveAlerts();
+    const socket = startLiveAlerts();
+
+    return () => {
+      socket?.close();
+      socketRef.current = null;
+    };
   }, []);
 
   const loadDashboard = async () => {
@@ -56,13 +64,26 @@ function App() {
   const startLiveAlerts = () => {
     try {
       const socket = new WebSocket(WEBSOCKET_URL);
+      socketRef.current = socket;
       socket.addEventListener("message", (event) => {
         const liveAlert = JSON.parse(event.data);
         setAlertsData((current) => [liveAlert, ...current].slice(0, 12));
         setNotifications((current) => [liveAlert, ...current].slice(0, 3));
       });
+      socket.addEventListener("error", (event) => {
+        console.warn("Live alert websocket error", event);
+      });
+      return socket;
     } catch (wsError) {
       console.warn("Live alert stream is unavailable", wsError);
+      return null;
+    }
+  };
+
+  const handleInputKeyDown = (event) => {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      handleSubmit();
     }
   };
 
@@ -159,6 +180,7 @@ function App() {
                     query={query}
                     setQuery={setQuery}
                     onSubmit={handleSubmit}
+                    onInputKeyDown={handleInputKeyDown}
                     loading={consoleLoading}
                     history={historyData}
                   />

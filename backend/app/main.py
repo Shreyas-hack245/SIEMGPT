@@ -33,8 +33,8 @@ app.add_middleware(
 async def startup_event():
     asyncio.create_task(alert_generator())
 
-app.include_router(auth_router, prefix="/api/auth", tags=["auth"])
-app.include_router(alerts_router, prefix="/api/alerts", tags=["alerts"])
+app.include_router(auth_router, prefix="/api/v1/auth", tags=["auth"])
+app.include_router(alerts_router, prefix="/api/v1/alerts", tags=["alerts"])
 app.include_router(dashboard_router, prefix="/api/v1/dashboard", tags=["dashboard"])
 app.include_router(router, prefix="/api/v1")
 

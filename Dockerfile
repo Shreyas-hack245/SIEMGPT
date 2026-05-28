@@ -12,6 +12,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Copy requirements and install Python dependencies
 COPY backend/requirements.txt .
+RUN apt-get update && apt-get install -y \
+    gcc \
+    pkg-config \
+    libcairo2-dev \
+    python3-dev \
+    && rm -rf /var/lib/apt/lists/*
 RUN pip install --user --no-cache-dir -r requirements.txt
 
 # Stage 2: Runtime

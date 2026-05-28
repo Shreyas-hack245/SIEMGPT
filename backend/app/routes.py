@@ -1,5 +1,9 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+import json
 from pydantic import BaseModel
+from app.db.database import get_db
+from app.models.user import User as UserModel
 from app.context_manager import save_message, get_conversation_history
 from app.nlp_engine import (
     detect_intent,
@@ -19,9 +23,22 @@ class ChatRequest(BaseModel):
 
 
 @router.post("/chat")
-def chat(request: ChatRequest):
+def chat(request: ChatRequest, db: Session = Depends(get_db)):
     user_message = request.message
-    save_message("user", user_message)
+    
+    user = db.query(UserModel).filter(UserModel.email == "demo@siemgpt.local").first()
+    if not user:
+        user = UserModel(
+            email="demo@siemgpt.local",
+            username="demo_user",
+            hashed_password="mock",
+            role="admin"
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+    save_message(db, user.id, "user", user_message)
     intent = detect_intent(user_message)
 
     if intent == "investigation":
@@ -36,9 +53,9 @@ def chat(request: ChatRequest):
             "report": report,
             "analytics": analytics
         }
-        save_message("assistant", assistant_response)
+        save_message(db, user.id, "assistant", json.dumps(assistant_response))
 
-        history = get_conversation_history()
+        history = get_conversation_history(db, user.id)
         return {
             "mode": "investigation",
             "intent": intent,
@@ -54,9 +71,9 @@ def chat(request: ChatRequest):
         "mode": "assistant",
         "explanation": explanation
     }
-    save_message("assistant", assistant_response)
+    save_message(db, user.id, "assistant", json.dumps(assistant_response))
 
-    history = get_conversation_history()
+    history = get_conversation_history(db, user.id)
     return {
         "mode": "assistant",
         "intent": intent,

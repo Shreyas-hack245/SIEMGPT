@@ -15,10 +15,10 @@ services:
     volumes:
       - elasticsearch-data:/usr/share/elasticsearch/data
     healthcheck:
-      test: ["CMD-SHELL", "curl -s http://localhost:9200 | grep -q 'You Know, for Search'"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+  test: ["CMD-SHELL", "curl -u elastic:changeme -s http://localhost:9200 >/dev/null || exit 1"]
+  interval: 30s
+  timeout: 10s
+  retries: 10
     networks:
       - siemgpt-network
 

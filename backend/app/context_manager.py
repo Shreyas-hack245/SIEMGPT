@@ -34,7 +34,7 @@ def save_message(
         user_id=user_id,
         message_type=role,
         content=content,
-        metadata=metadata
+        meta_data=metadata
     )
     
     db.add(message)
@@ -73,7 +73,7 @@ def get_conversation_history(
             "role": msg.message_type,
             "content": msg.content,
             "timestamp": msg.created_at.isoformat(),
-            "metadata": msg.metadata
+            "metadata": msg.meta_data
         }
         for msg in reversed(messages)
     ]

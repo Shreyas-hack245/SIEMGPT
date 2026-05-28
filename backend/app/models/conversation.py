@@ -15,7 +15,7 @@ class ConversationHistory(Base):
     user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
     message_type = Column(String, nullable=False)  # "user", "assistant"
     content = Column(Text, nullable=False)
-    metadata = Column(JSON, nullable=True)  # Store additional context
+    meta_data = Column(JSON, nullable=True)  # Store additional context
     created_at = Column(DateTime, server_default=func.now())
     
     # Relationships

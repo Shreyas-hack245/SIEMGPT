@@ -23,7 +23,6 @@ class ElasticsearchClient:
         try:
             # Configure authentication if provided
             kwargs = {
-                "timeout": settings.ELASTICSEARCH_TIMEOUT,
                 "max_retries": settings.ELASTICSEARCH_RETRY,
                 "request_timeout": settings.ELASTICSEARCH_TIMEOUT
             }

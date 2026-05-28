@@ -12,7 +12,7 @@ class ConversationHistory(Base):
     __tablename__ = "conversation_history"
     
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     message_type = Column(String, nullable=False)  # "user", "assistant"
     content = Column(Text, nullable=False)
     meta_data = Column(JSON, nullable=True)  # Store additional context
@@ -27,7 +27,7 @@ class InvestigationQuery(Base):
     __tablename__ = "investigation_queries"
     
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     query = Column(Text, nullable=False)
     es_query = Column(JSON, nullable=True)
     result_count = Column(Integer, default=0)

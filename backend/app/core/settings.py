@@ -3,7 +3,8 @@ Application settings with environment validation
 """
 import os
 from typing import Optional
-from pydantic import BaseSettings, validator
+from pydantic import validator
+from pydantic_settings import BaseSettings
 import logging
 
 logger = logging.getLogger(__name__)

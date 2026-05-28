@@ -4,7 +4,7 @@ Production-grade Elasticsearch integration with error handling and retries
 import logging
 from typing import Dict, Any, Optional
 from elasticsearch import Elasticsearch
-from elasticsearch.exceptions import ElasticsearchException, ConnectionError
+from elasticsearch.exceptions import ApiError, ConnectionError
 from app.core.settings import settings
 
 logger = logging.getLogger(__name__)
@@ -103,7 +103,7 @@ class ElasticsearchClient:
             logger.error(f"Elasticsearch connection error: {str(e)}")
             return self._error_response(f"Connection error: {str(e)}")
         
-        except ElasticsearchException as e:
+        except ApiError as e:
             logger.error(f"Elasticsearch query error: {str(e)}")
             return self._error_response(f"Query error: {str(e)}")
         

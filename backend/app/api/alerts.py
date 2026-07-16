@@ -1,17 +1,18 @@
 import asyncio
 import json
-import random
 from datetime import datetime
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends
 from sqlalchemy.orm import Session
 
 from app.core.auth import get_current_user
-from app.db.database import get_db
+from app.db.database import get_db, SessionLocal
 from app.models.alert import Alert
 from app.services.threat_classifier import classify_threat_score
+import logging
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 
 class ConnectionManager:
@@ -63,24 +64,45 @@ def get_recent_alerts(
 
 
 async def alert_generator():
-    alert_types = [
-        {"title": "Malware Detected", "technique": "malware"},
-        {"title": "Failed Login Spike", "technique": "failed_login"},
-        {"title": "Suspicious VPN Activity", "technique": "suspicious_vpn"},
-        {"title": "Data Exfiltration Attempt", "technique": "data_exfiltration"},
-    ]
-    ips = ["192.168.1.100", "10.0.0.5", "172.16.0.42", "203.0.113.5"]
-
+    """
+    Poll the database for new alerts and broadcast them to active websocket connections.
+    This replaces the previous synthetic alert generator and uses real persisted alerts.
+    """
+    last_seen_id = None
     while True:
-        await asyncio.sleep(random.randint(6, 14))
-        event = random.choice(alert_types)
-        severity = classify_threat_score(random.randint(38, 96))
-        alert = {
-            "title": event["title"],
-            "source_ip": random.choice(ips),
-            "severity": severity,
-            "technique": event["technique"],
-            "description": f"Detected {event['title']} across the SOC sensor grid.",
-            "timestamp": datetime.utcnow().isoformat() + "Z",
-        }
-        await manager.broadcast(json.dumps(alert))
+        try:
+            db = SessionLocal()
+            # fetch newest alerts up to 50
+            alerts = db.query(Alert).order_by(Alert.created_at.desc()).limit(50).all()
+            db.close()
+
+            if not alerts:
+                await asyncio.sleep(5)
+                continue
+
+            # alerts are in descending order; determine new ones
+            newest_id = alerts[0].id
+            new_alerts = []
+            for a in reversed(alerts):
+                if last_seen_id is None or a.id > last_seen_id:
+                    new_alerts.append(a)
+
+            if newest_id:
+                last_seen_id = newest_id
+
+            for a in new_alerts:
+                payload = {
+                    "id": a.id,
+                    "title": a.title,
+                    "source_ip": a.source_ip,
+                    "severity": a.severity,
+                    "technique": a.technique,
+                    "description": a.description,
+                    "timestamp": a.created_at.isoformat() if hasattr(a, "created_at") else datetime.utcnow().isoformat() + "Z",
+                }
+                await manager.broadcast(json.dumps(payload))
+
+        except Exception as e:
+            logger.exception(f"Alert poller encountered an error: {e}")
+
+        await asyncio.sleep(5)

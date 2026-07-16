@@ -22,7 +22,7 @@ const CustomTooltip = ({ active, payload }) => {
   );
 };
 
-export default function AttackTimeline({ data }) {
+export default function AttackTimeline({ data, loading = false, error = null }) {
   const chartData = data.map((item) => ({
     label: item.timestamp.split("T")[1].slice(0, 5),
     intensity: severityMap[item.severity] || 1,
@@ -48,6 +48,15 @@ export default function AttackTimeline({ data }) {
         </div>
       </div>
       <div className="h-64">
+        {loading ? (
+          <div className="flex h-full items-center justify-center">
+            <div className="animate-pulse text-slate-500">Loading timeline…</div>
+          </div>
+        ) : !data || data.length === 0 ? (
+          <div className="flex h-full items-center justify-center">
+            <div className="text-center text-slate-400">No timeline data available for the selected range.</div>
+          </div>
+        ) : (
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
             <defs>
@@ -63,6 +72,7 @@ export default function AttackTimeline({ data }) {
             <Area type="monotone" dataKey="intensity" stroke="#22c55e" strokeWidth={3} fill="url(#timelineGradient)" />
           </AreaChart>
         </ResponsiveContainer>
+        )}
       </div>
 
       <div className="mt-6 grid gap-3">

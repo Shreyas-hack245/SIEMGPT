@@ -166,12 +166,12 @@ function App() {
               </section>
 
               <section className="grid gap-6 xl:grid-cols-[1.5fr_1fr]">
-                <AttackTimeline data={summary?.timeline || []} />
-                <AlertFeed alerts={alertsData} />
+                <AttackTimeline data={summary?.timeline || []} loading={summary === null} />
+                <AlertFeed alerts={alertsData} loading={summary === null} />
               </section>
 
               <section className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-                <ThreatMap topSources={summary?.top_sources || []} techniqueBreakdown={summary?.technique_breakdown || []} />
+                <ThreatMap topSources={summary?.top_sources || []} techniqueBreakdown={summary?.technique_breakdown || []} loading={summary === null} />
                 <div className="space-y-6">
                   <InvestigationConsole
                     query={query}

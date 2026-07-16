@@ -8,7 +8,7 @@ const severityMap = {
   Low: "bg-emerald-600 text-emerald-100",
 };
 
-export default function AlertFeed({ alerts }) {
+export default function AlertFeed({ alerts, loading = false }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -30,27 +30,37 @@ export default function AlertFeed({ alerts }) {
       </div>
 
       <div className="space-y-4">
-        {alerts.map((alert, index) => (
-          <div key={`${alert.source_ip}-${index}`} className="rounded-3xl border border-cyan-500/20 bg-black/70 p-4 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-sm font-semibold text-white">{alert.title}</p>
-                <p className="mt-1 text-xs text-slate-400">{alert.description || alert.technique || "Threat detected in network telemetry."}</p>
-              </div>
-              <span className={`rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.3em] ${severityMap[alert.severity] || severityMap.Low}`}>{alert.severity}</span>
-            </div>
-            <div className="mt-4 flex items-center justify-between text-xs text-slate-500">
-              <div className="inline-flex items-center gap-2">
-                <Activity className="h-3.5 w-3.5 text-cyan-400" />
-                <span>{alert.source_ip}</span>
-              </div>
-              <div className="inline-flex items-center gap-2">
-                <ShieldAlert className="h-3.5 w-3.5 text-emerald-400" />
-                <span>{new Date(alert.created_at || Date.now()).toLocaleTimeString()}</span>
-              </div>
-            </div>
+        {loading ? (
+          <div className="space-y-3">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="h-20 rounded-2xl bg-slate-900/40 animate-pulse" />
+            ))}
           </div>
-        ))}
+        ) : !alerts || alerts.length === 0 ? (
+          <div className="text-slate-400">No live alerts available — check SIEM ingestion or run a health check.</div>
+        ) : (
+          alerts.map((alert, index) => (
+            <div key={`${alert.source_ip}-${index}`} className="rounded-3xl border border-cyan-500/20 bg-black/70 p-4 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-semibold text-white">{alert.title}</p>
+                  <p className="mt-1 text-xs text-slate-400">{alert.description || alert.technique || "Threat detected in network telemetry."}</p>
+                </div>
+                <span className={`rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.3em] ${severityMap[alert.severity] || severityMap.Low}`}>{alert.severity}</span>
+              </div>
+              <div className="mt-4 flex items-center justify-between text-xs text-slate-500">
+                <div className="inline-flex items-center gap-2">
+                  <Activity className="h-3.5 w-3.5 text-cyan-400" />
+                  <span>{alert.source_ip}</span>
+                </div>
+                <div className="inline-flex items-center gap-2">
+                  <ShieldAlert className="h-3.5 w-3.5 text-emerald-400" />
+                  <span>{new Date(alert.created_at || Date.now()).toLocaleTimeString()}</span>
+                </div>
+              </div>
+            </div>
+          ))
+        )}
       </div>
     </motion.div>
   );

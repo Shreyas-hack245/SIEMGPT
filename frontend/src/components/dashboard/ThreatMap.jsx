@@ -8,7 +8,7 @@ const regionForIp = (ip) => {
   return "Global"
 };
 
-export default function ThreatMap({ topSources = [], techniqueBreakdown = [] }) {
+export default function ThreatMap({ topSources = [], techniqueBreakdown = [], loading = false }) {
   const topSourceList = topSources.slice(0, 4);
   const hasSources = topSourceList.length > 0;
 
@@ -28,6 +28,7 @@ export default function ThreatMap({ topSources = [], techniqueBreakdown = [] }) 
       <div className="relative overflow-hidden rounded-3xl border border-cyan-500/10 bg-slate-950/80 p-4">
         <div className="relative h-72 w-full rounded-3xl bg-slate-900">
           <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_top,_rgba(34,197,94,0.25),_transparent_30%)]" />
+          {loading && <div className="absolute inset-0 flex items-center justify-center text-slate-500">Loading map…</div>}
           <div className="absolute top-1/4 left-3/4 rounded-full border border-white/10 bg-red-500/90 px-3 py-1 text-[10px] uppercase tracking-[0.35em] text-white shadow-lg shadow-slate-950/40">
             APAC
           </div>
